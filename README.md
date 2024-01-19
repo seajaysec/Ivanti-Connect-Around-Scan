@@ -185,4 +185,4 @@ A special thanks to these groups and individuals for their contributions to the 
 
 ## About Me
 
-Chris Farrell is a vulnerability researcher committed to enhancing cybersecurity through meticulous analysis and innovative solutions.
+Chris Farrell is a vulnerability researcher committed to enhancing cybersecurity through thorough analysis and comprehensive solutions.
