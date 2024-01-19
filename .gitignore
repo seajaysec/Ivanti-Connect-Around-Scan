@@ -1,0 +1,12 @@
+# Exclude directories and their contents
+/results/
+/targets/
+
+# Exclude specific file types
+.DS_Store
+.venv
+*.csv
+*.txt
+
+# Exception for requirements.txt
+!requirements.txt
