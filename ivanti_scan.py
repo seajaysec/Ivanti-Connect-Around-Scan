@@ -18,6 +18,9 @@ except ImportError:
 # Disable warnings for unverified HTTPS requests
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# Global set to store vulnerable targets
+vulnerable_targets = set()
+
 
 def check_system_info(host, port, user_agent):
     protocol = "http" if port == 80 else "https"
@@ -29,7 +32,7 @@ def check_system_info(host, port, user_agent):
         if res.status_code == 200:
             return "Vulnerable"
         else:
-            return "Mitigated"
+            return "Not Vulnerable"
     except requests.exceptions.RequestException:
         return "Check Failed"
 
@@ -60,7 +63,7 @@ def check_host(host, port, user_agent):
         if r.status_code == 403 and len(r.content) == 0:
             web_access_status = "Vulnerable"
         elif secure_phrase in r.text:
-            web_access_status = "Mitigated"
+            web_access_status = "Not Vulnerable"
         elif r.status_code != 200:
             web_access_status = f"HTTP Error: {r.status_code}"
         else:
@@ -74,6 +77,10 @@ def check_host(host, port, user_agent):
 
     system_info_status = check_system_info(host, port, user_agent)
     bypass_status = check_bypass_vulnerability(host, port, user_agent)
+    # Add the host:port to vulnerable_targets if any status is "Vulnerable"
+    if "Vulnerable" in [web_access_status, system_info_status, bypass_status]:
+        vulnerable_targets.add(f"{host}:{port}")
+
     return host, port, web_access_status, system_info_status, bypass_status
 
 
@@ -92,13 +99,20 @@ def strip_protocol_and_dedupe(results):
 
 def count_statuses(results):
     status_counts = {}
-    for _, combined_status in results.items():
+    target_status_map = {}
+    for (host, port), combined_status in results.items():
         statuses = combined_status.split("; ")
         for status in statuses:
-            if status not in status_counts:
-                status_counts[status] = 1
-            else:
-                status_counts[status] += 1
+            target_key = f"{host}:{port}"
+            status_key = f"{target_key}-{status}"
+            if (
+                status_key not in target_status_map
+            ):  # Check if this target-status combination is already counted
+                target_status_map[status_key] = True
+                if status not in status_counts:
+                    status_counts[status] = 1
+                else:
+                    status_counts[status] += 1
     return status_counts
 
 
@@ -107,18 +121,22 @@ def print_status(
 ):
     print(f"{host}:{port}")
 
-    color_map = {
-        "Mitigated": Fore.GREEN,
-        "Vulnerable": Fore.RED,
-        "HTTP Error": Fore.YELLOW,
-        "Network Issue": Fore.BLUE,
-        "Timeout Error": Fore.MAGENTA,
-        "Connection Error": Fore.MAGENTA,
-        "Ivanti Presence Inconclusive": Fore.CYAN,
-    }
-
     def colored_status(status):
-        color = color_map.get(status.split()[0], "")
+        color_map = {
+            "Not Vulnerable": Fore.GREEN,
+            "Vulnerable": Fore.RED,
+            "HTTP Error": Fore.YELLOW,  # This can be used as a general color for all HTTP errors
+            "Network Issue": Fore.BLUE,
+            "Timeout Error": Fore.MAGENTA,
+            "Connection Error": Fore.MAGENTA,
+            "Ivanti Presence Inconclusive": Fore.CYAN,
+            "Vulnerable (Bypass Detected)": Fore.RED,
+        }
+
+        # Use the entire status string to fetch the color
+        color = color_map.get(
+            status.split(":")[0], ""
+        )  # Splits the status and gets the first part for matching
         return color + status + Style.RESET_ALL if color_enabled else status
 
     print(f"    Web Access:      {colored_status(web_access_status)}")
@@ -246,11 +264,18 @@ def main():
             )
 
     status_counts = count_statuses(cleaned_results)
-    print("\nStatus Counts:")
+    print("\nUnique Target Counts by Status:")
     for status, count in status_counts.items():
         print(f"{status}: {count}")
 
-    print(f"Results written to {output_path}")
+    if vulnerable_targets:
+        print("\nVulnerable Targets:")
+        for target in vulnerable_targets:
+            print(target)
+    else:
+        print("\nNo Vulnerable Targets Detected")
+
+    print(f"\n\nResults written to {output_path}")
 
 
 if __name__ == "__main__":
