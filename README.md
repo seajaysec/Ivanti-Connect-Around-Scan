@@ -16,14 +16,15 @@
         - [Custom Variables](#custom-variables)
         - [Output Stylization](#output-stylization)
   - [To Do](#to-do)
-  - [Contribution Guidelines](#contribution-guidelines)
-    - [Reporting Issues](#reporting-issues)
-    - [Submitting Pull Requests](#submitting-pull-requests)
   - [Intended Use and Disclaimer](#intended-use-and-disclaimer)
     - [Purpose](#purpose)
     - [Disclaimer](#disclaimer)
   - [License](#license)
+  - [Contribution Guidelines](#contribution-guidelines)
+    - [Reporting Issues](#reporting-issues)
+    - [Submitting Pull Requests](#submitting-pull-requests)
   - [Acknowledgments](#acknowledgments)
+  - [About Me](#about-me)
 
 ## Overview
 
@@ -132,25 +133,6 @@ Utilize one of these options to specify target(s) for testing.
 - [ ] Allow user specification of testing methods
 - [ ] Add additional validation methods
 - [ ] Improve output formatting
-- [ ] Add verbose mode
-
-## Contribution Guidelines
-
-Contributions are welcome! If you're looking to contribute, here are a few ways you can help:
-
-### Reporting Issues
-- **Error Reports**: If you find any errors or bugs, please create an issue detailing the problem, steps to reproduce it, and any relevant logs or screenshots.
-- **Feature Requests**: Have ideas for new features or enhancements? We'd love to hear them! Please submit an issue with a clear description of your proposed feature.
-
-### Submitting Pull Requests
-- **Improving Functionality**: Contributions that improve the tool's functionality are greatly appreciated. If you have developed a fix or enhancement, feel free to submit a pull request.
-- **Guidelines**:
-  - Fork the repository and create your branch from `main`.
-  - Write clear and concise commit messages.
-  - Ensure your code adheres to the existing style to maintain consistency.
-  - Create a pull request with a detailed description of your changes.
-
-Thank you for considering contributing to this project.
 
 ## Intended Use and Disclaimer
 
@@ -168,6 +150,24 @@ By using this tool, you acknowledge and agree to these terms.
 ## License
 This project is licensed under the MIT License with an Ethical Use Clause - see the [LICENSE](LICENSE.md) file for details.
 
+## Contribution Guidelines
+
+We welcome contributions to the Ivanti Connect Around Vulnerability Checker project! If you're looking to contribute, here are a few ways you can help:
+
+### Reporting Issues
+- **Error Reports**: If you find any errors or bugs, please create an issue detailing the problem, steps to reproduce it, and any relevant logs or screenshots.
+- **Feature Requests**: Have ideas for new features or enhancements? We'd love to hear them! Please submit an issue with a clear description of your proposed feature.
+
+### Submitting Pull Requests
+- **Improving Functionality**: Contributions that improve the tool's functionality are greatly appreciated. If you have developed a fix or enhancement, feel free to submit a pull request.
+- **Guidelines**:
+  - Fork the repository and create your branch from `main`.
+  - Write clear and concise commit messages.
+  - Ensure your code adheres to the existing style to maintain consistency.
+  - Create a pull request with a detailed description of your changes.
+
+Thank you for considering contributing to this project.
+
 ## Acknowledgments
 
 This project leverages research and methodologies developed by several esteemed groups and individuals in the field of cybersecurity. We extend our gratitude to:
@@ -183,4 +183,9 @@ This project leverages research and methodologies developed by several esteemed 
 
 A special thanks to these groups and individuals for their contributions to the field of cybersecurity, which have greatly aided the development of this tool.
 
-Additional thanks to Sherwin Aghamohammad for his contributions to the CI/CD pipeline for this project.
+
+## About Me
+
+Chris Farrell is a vulnerability researcher committed to enhancing cybersecurity through thorough analysis and comprehensive solutions.
+
+Experience includes vulnerability management, vCISO, senior penetration tester, incident response lead, ISSO.
