@@ -30,10 +30,11 @@
 
 The Connect Around attack chain, involving CVE-2023-46805 and CVE-2024-21887, poses a significant threat to Ivanti Connect Secure & Policy Secure appliances. This attack chain enables unauthorized access and command execution on vulnerable systems. CVE-2023-46805 allows attackers to bypass authentication controls, while CVE-2024-21887, a command injection vulnerability, can be exploited without needing authentication when combined with the former. This duo of vulnerabilities necessitates urgent attention from organizations using Ivanti products, urging them to apply available mitigations as detailed in the Ivanti Community Forum.
 
-In response to the need for organizations to validate mitigation status, the Ivanti Connect Around Vulnerability Checker has been developed. This script is designed to assess Ivanti Connect Secure & Policy Secure appliances for vulnerabilities associated with the Connect Around attack chain. It performs checks to verify the presence of these vulnerabilities and outputs the results in a CSV format. Various mitigation validation methodologies are employed to provide a comprehensive and reliable assessment.
+In response to the need for organizations to validate mitigation status, the Ivanti Connect Around Vulnerability Checker has been developed. This script is designed to assess Ivanti Connect Secure & Policy Secure appliances for vulnerabilities associated with the Connect Around attack chain. It performs checks to verify the presence of these vulnerabilities and outputs the results in a CSV format. Multiple mitigation validation methodologies are employed to provide a comprehensive and reliable assessment.
 
 ## Features
 
+- **Multiple validation methods**: To ensure validation is comprehensive, multiple testing methods are performed against each target. Results are returned for each approach.
 - **Concurrent Host Checks**: Efficiently scans multiple hosts simultaneously, significantly reducing the time needed to assess vulnerabilities across a network.
 - **Customizable Command-Line Arguments**: Offers flexibility to define specific parameters such as input and output file paths, the number of concurrent threads for scanning, and selectable ports, ensuring tailored and precise scans.
 - **Adaptive Output Management**: Automatically generates output files with a default naming convention based on the current date and time, while also allowing users to specify custom filenames to suit their organizational needs.
