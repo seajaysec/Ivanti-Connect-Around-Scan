@@ -32,6 +32,8 @@ The Connect Around attack chain, involving CVE-2023-46805 and CVE-2024-21887, po
 
 In response to the need for organizations to validate mitigation status, the Ivanti Connect Around Vulnerability Checker has been developed. This script is designed to assess Ivanti Connect Secure & Policy Secure appliances for vulnerabilities associated with the Connect Around attack chain. It performs checks to verify the presence of these vulnerabilities and outputs the results in a CSV format. Multiple mitigation validation methodologies are employed to provide a comprehensive and reliable assessment.
 
+Note: This script does not validate CVE-2024-21888 or CVE-2024-21893.
+
 ## Features
 
 - **Multiple validation methods**: To ensure validation is comprehensive, multiple testing methods are performed against each target. Results are returned for each approach.
@@ -62,11 +64,11 @@ The script conducts various checks to assess the security status of Ivanti Conne
 - **Research Link**: [Metasploit Framework Module](https://github.com/rapid7/metasploit-framework/blob/de6ed9e1d6e39593582369083c6f7678c7d89262/modules/exploits/linux/http/ivanti_connect_secure_rce_cve_2023_46805.rb).
 
 ### BYPASS DETECTED
-- **Methodology**: Adapted from research by Rapid7 at AttackerKB.
-- **Description**: Atempts to access the `/api/v1/totp/user-backup-code` URI.
+- **Methodology**: Adapted from Assetnote's research on alternative bypass URIs.
+- **Description**: Atempts to access the `/admin/options/` URI.
 - **Positive Result**: Status displayed - "Vulnerable (Bypass Detected)".
 - **Negative Result**: Status displayed - "Not Vulnerable".
-- **Research Link**: [Rapid7 Analysis on AttackerKB](https://attackerkb.com/topics/AdUh6by52K/cve-2023-46805/rapid7-analysis).
+- **Research Link**: [Assetnote](https://www.assetnote.io/resources/research/high-signal-detection-and-exploitation-of-ivantis-pulse-connect-secure-auth-bypass-rce).
 
 Each check provides insights into potential vulnerabilities. "Vulnerable" indicates a confirmed vulnerability, while "Mitigated" or "Not Vulnerable" signifies that the system appears secure against the specific vulnerability being tested.
 
@@ -176,11 +178,14 @@ This project leverages research and methodologies developed by several esteemed 
 - **WatchTowr Labs**: For their insightful research into Ivanti Connect Secure vulnerabilities. Their work has been instrumental in developing the WEB ACCESS check methodology.
   - [WatchTowr Labs Research](https://labs.watchtowr.com/welcome-to-2024-the-sslvpn-chaos-continues-ivanti-cve-2023-46805-cve-2024-21887/)
 
-- **Stephen Fewer of Rapid7**: His work on the Metasploit Module provided valuable insights into the SYSTEM INFO check methodology.
+- **Stephen Fewer of Rapid7**: His work on the Metasploit Module provided valuable insights.
   - [Metasploit Framework Module by Stephen Fewer](https://github.com/rapid7/metasploit-framework/blob/de6ed9e1d6e39593582369083c6f7678c7d89262/modules/exploits/linux/http/ivanti_connect_secure_rce_cve_2023_46805.rb)
 
-- **Rapid7 at AttackerKB**: Their research into authentication bypass techniques greatly contributed to the BYPASS DETECTED check methodology.
+- **Rapid7 at AttackerKB**: Their research into authentication bypass techniques greatly informed this script.
   - [Rapid7 Analysis on AttackerKB](https://attackerkb.com/topics/AdUh6by52K/cve-2023-46805/rapid7-analysis)
+
+- **Assetnote**: Recognizing `/admin/options/` as a reliable testing method assists in determining mitigation application. 
+  - [Assetnote Analysis](https://www.assetnote.io/resources/research/high-signal-detection-and-exploitation-of-ivantis-pulse-connect-secure-auth-bypass-rce)
 
 A special thanks to these groups and individuals for their contributions to the field of cybersecurity, which have greatly aided the development of this tool.
 
